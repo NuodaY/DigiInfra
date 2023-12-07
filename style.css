@@ -1,0 +1,100 @@
+@import "node_modules/ol/ol.css";
+
+html, body {
+  margin: 0;
+  height: 100%;
+  user-select: none;
+}
+#map {
+  position: absolute;
+  height: 100%;
+  width: 100%;
+  z-index: 0;
+}
+
+.searchbox {
+  position: absolute;
+  width: 200px;
+  height: 30px;
+  border-radius: 8px;
+  top: 5px;
+  left: 50px;
+}
+
+#search-icon {
+  position: absolute;
+  top: 21px;
+  left: 230px;
+}
+
+select {
+  position: absolute;
+  width: 200px;
+  height: 30px;
+  top: 5px;
+  left: 80%;
+  border-radius: 8px;
+}
+
+.slider {
+  position: absolute;
+  width: 200px;
+  top: 35px;
+  left: 80%;
+}
+
+#github-icon {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+}
+
+#info-icon {
+  position: absolute;
+  top: 20px;
+  right: 60px;
+}
+
+.switch {
+  position: absolute;
+  z-index: 9999;
+  left: 50px;
+  top: 10px;
+}
+
+.ol-popup {
+  position: absolute;
+  background-color: white;
+  -webkit-filter: drop-shadow(0 1px 4px rgba(0, 0, 0, 0.2));
+  filter: drop-shadow(0 1px 4px rgba(0, 0, 0, 0.2));
+  padding: 15px;
+  border-radius: 10px;
+  border: 1px solid #cccccc;
+  bottom: 12px;
+  left: -50px;
+  width: 300px;
+}
+
+#info-panel {
+  position: absolute;
+  background-color: white;
+  display: none;
+  width: 500px;
+  height: 500px;
+  top: 80px;
+  right: 50px;
+  border-radius: 10px;
+  -webkit-filter: drop-shadow(0 1px 4px rgba(0, 0, 0, 0.2));
+  filter: drop-shadow(0 1px 4px rgba(0, 0, 0, 0.2));
+  padding: 15px;
+}
+
+#close-icon {
+  position: absolute;
+  right: 15px;
+  top: 15px;
+}
+
+i {
+  cursor: pointer;
+}
