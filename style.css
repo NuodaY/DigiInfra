@@ -27,7 +27,7 @@ html, body {
   left: 230px;
 }
 
-select {
+#layers {
   position: absolute;
   width: 200px;
   height: 30px;
@@ -53,6 +53,18 @@ select {
   position: absolute;
   top: 20px;
   right: 60px;
+}
+
+#filter-icon {
+  position: absolute;
+  top: 20px;
+  right: 100px;
+}
+
+#measure-icon {
+  position: absolute;
+  top: 100px;
+  left: 10px;
 }
 
 .switch {
@@ -95,6 +107,16 @@ select {
   top: 15px;
 }
 
+#startFilter {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
 i {
   cursor: pointer;
+}
+
+i:hover {
+  color: aqua!important;
 }

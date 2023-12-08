@@ -2,6 +2,7 @@ import './style.css';
 import {Map, View} from 'ol';
 import TileLayer from 'ol/layer/Tile';
 import OSM from 'ol/source/OSM';
+import XYZ from 'ol/source/OSM';
 import {fromLonLat, transform} from 'ol/proj';
 import Overlay from 'ol/Overlay.js';
 import {Stroke, Style, Fill} from 'ol/style';
@@ -14,6 +15,8 @@ import Draw from 'ol/interaction/Draw.js';
 import Select from 'ol/interaction/Select.js'
 import { pointerMove } from 'ol/events/condition';
 import { getCenter } from 'ol/extent';
+import {OverviewMap, defaults as defaultControls} from 'ol/control.js';
+import {getLength, getArea} from 'ol/sphere.js';
 
 const layers = [
   'greater_darwin_access_to_doctors', 
@@ -29,12 +32,25 @@ const layerIndicators = [
 ]
 const geoserver_url = 'https://g10.digitinfra.org/geoserver/G10_ma/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=G10_ma%3A';
 let selectedLayerIndex = 0;
+let isMeasuring = false;
+
+const overviewMapControl = new OverviewMap({
+  layers: [
+    new TileLayer({
+      source: new OSM(),
+    }),
+  ],
+  collapsed: false,
+});
 
 const map = new Map({
   target: 'map',
+  controls: defaultControls().extend([overviewMapControl]),
   layers: [
     new TileLayer({
-      source: new OSM()
+      source: new XYZ({
+        url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}'
+      })
     })
   ],
   view: new View({
@@ -55,6 +71,17 @@ const getColor = (feature) => {
   let index = Math.round(indicator / 3 * 50);
   index = index > 50 ? 50 : index;
   return colors[index];
+}
+
+const styleFunction = function(feature) {
+  return new Style({
+    fill: new Fill({
+      color: getColor(feature),
+    }),
+    stroke: new Stroke({
+      color: 'rgba(255,255,255,0.8)',
+    }),
+  })
 }
 
 const source0 = new VectorSource({
@@ -83,64 +110,28 @@ const source3 = new VectorSource({
 
 const layer0 = new VectorLayer({
   source: source0,
-  style: function(feature) {
-    return new Style({
-      fill: new Fill({
-        color: getColor(feature),
-      }),
-      stroke: new Stroke({
-        color: 'rgba(255,255,255,0.8)',
-      }),
-    })
-  },
+  style: styleFunction,
   title: layers[0],
   visible: true
 });
 
 const layer1 = new VectorLayer({
   source: source1,
-  style: function(feature) {
-    return new Style({
-      fill: new Fill({
-        color: getColor(feature),
-      }),
-      stroke: new Stroke({
-        color: 'rgba(255,255,255,0.8)',
-      }),
-    })
-  },
+  style: styleFunction,
   title: layers[1],
   visible: false
 });
 
 const layer2 = new VectorLayer({
   source: source2,
-  style: function(feature) {
-    return new Style({
-      fill: new Fill({
-        color: getColor(feature),
-      }),
-      stroke: new Stroke({
-        color: 'rgba(255,255,255,0.8)',
-      }),
-    })
-  },
+  style: styleFunction,
   title: layers[2],
   visible: false
 });
 
 const layer3 = new VectorLayer({
   source: source3,
-  style: function(feature) {
-    return new Style({
-      fill: new Fill({
-        color: getColor(feature),
-      }),
-      stroke: new Stroke({
-        color: 'rgba(255,255,255,0.8)',
-      }),
-    })
-  },
+  style: styleFunction,
   title: layers[3],
   visible: false
 });
@@ -172,12 +163,12 @@ const overlay = new Overlay({
 map.addOverlay(overlay);
 
 map.on("click", function(evt){
+  if (isMeasuring) return;
   let latLng = transform(evt.coordinate, 'EPSG:3857', 'EPSG:4326');
   // 经纬度太长，精确到3位小数
   for (let i in latLng) {
     latLng[i] = latLng[i].toFixed(3)
   }
-
   container.innerText = `Geographic Coordinates: (${latLng})`;
   overlay.setPosition(evt.coordinate);
 
@@ -186,14 +177,14 @@ map.on("click", function(evt){
       return feature;
     }
   );
-  console.log(features);
+
   if (features) {
     let allProperties = features.getProperties();
     let results = {
       SA2: allProperties["sa2_name21"],
       GCC: allProperties["gcc_name21"],
       STE: allProperties["ste_name21"],
-      Area: allProperties["areasqkm21"] + " km2"
+      Area: allProperties["areasqkm21"] + " km²"
     }
     let indicator = features.get(layerIndicators[selectedLayerIndex]);
     container.innerText += `\nRegion Information:${JSON.stringify(results, null, 2)}`;
@@ -236,7 +227,7 @@ searchButton.addEventListener("click", ()=>{
   let layers = layergroup.getLayers().getArray();
   let currentLayer = layers[selectedLayerIndex];
   let features = currentLayer.getSource().getFeatures();
-  let result_msg = "SA2 Not Found!";
+  let result_msg = "SA2 Not Found in Greater Darwin!";
   features.forEach((feature)=>{
     if (feature.get("sa2_name21") == input) {
       let extent = feature.getGeometry().getExtent();
@@ -256,6 +247,7 @@ searchButton.addEventListener("click", ()=>{
 
 let infoButton = document.querySelector("#info-icon");
 let authorButton = document.querySelector("#github-icon");
+let filterButton = document.querySelector("#filter-icon");
 let panel = document.querySelector("#info-panel");
 infoButton.addEventListener('click', ()=>{
   panel.style.display = "block";
@@ -269,8 +261,9 @@ infoButton.addEventListener('click', ()=>{
                   + "<p>Each indicator is shown in a layer. Users can switch the layer through the dropdown list above👆, or change layer opacity through the slider</p>"
                   + "<p>Click on a Statistical Area Lv2 (SA2) region and its information will pop up.</p>"
                   + "<p>Users can also type in a SA2 name to locate to the SA2.</p>"
+                  + "<p>The measure button on the left side allows to draw a polygon and measure its area. Click to activate measuring and click again to deactivate.</p>"
                   + "<i id='close-icon' class='fa-solid fa-xmark fa-xl'></i>"
-  panel.style.height = "500px";
+  panel.style.height = "600px";
   document.querySelector("#close-icon").addEventListener('click', ()=>{
     panel.style.display = "none";
   })
@@ -280,11 +273,71 @@ authorButton.addEventListener('click', ()=>{
   panel.innerHTML = "<h3>The web application is completely developed by Nuoda Yang.</h3>"
                   + "<p>Tools & Tech Stacks: Openlayers + PostGIS + Geoserver + Node.js</p>"
                   + "<p>Coding Languages: HTML + CSS + Javascript</p>"
-                  + "<a href=''>Github Repository</a><br>"
+                  + "<a href='https://github.com/NuodaY/DigiInfra'>Github Repository</a><br>"
                   + "<a href='https://www.linkedin.com/in/nuoda-yang-27883a211/'>Author Linkedin Page</a>"
                   + "<i id='close-icon' class='fa-solid fa-xmark fa-xl'></i>"
-  panel.style.height = "300px";
+  panel.style.height = "250px";
   document.querySelector("#close-icon").addEventListener('click', ()=>{
     panel.style.display = "none";
   })
+})
+filterButton.addEventListener('click', ()=>{
+  panel.style.display = "block";
+  panel.innerHTML = "<h3>Filter the features through expressions.</h3>"
+                  + "<input type='text' id='columnName' disabled></input>&nbsp&nbsp"
+                  + "<select id='operator'> \
+                      <option value='>'>&gt</option> \
+                      <option value='='>=</option> \
+                      <option value='<'>&lt</option> \
+                      </select>&nbsp&nbsp"
+                  + "<input type='text' id='number' placeholder='specify a number'></input><br><br>"
+                  + "<button id='startFilter'>Start Filter!</button>"
+                  + "<i id='close-icon' class='fa-solid fa-xmark fa-xl'></i>"
+  panel.style.height = "150px";
+  document.querySelector("#columnName").value = layerIndicators[selectedLayerIndex];
+  document.querySelector("#close-icon").addEventListener('click', ()=>{
+    panel.style.display = "none";
+  })
+  document.querySelector("#startFilter").addEventListener('click', ()=>{
+    let currentLayer = layergroup.getLayers().getArray()[selectedLayerIndex];
+    let vectorSource = currentLayer.getSource();
+    let url = vectorSource.getUrl();
+    let expression = "&CQL_FILTER=" + layerIndicators[selectedLayerIndex] 
+                    + document.querySelector("#operator").value
+                    + document.querySelector("#number").value;
+    console.log(url+expression);
+    fetch(url+expression).then(response=>response.json()).then(data=>{
+      const filteredFeatures = new GeoJSON().readFeatures(data, {
+        featureProjection: 'EPSG:3857'
+      });
+      vectorSource.clear();
+      vectorSource.addFeatures(filteredFeatures);
+    })
+    .catch(error => {
+      console.error('Error fetching filtered features:', error);
+    });
+  })
+})
+
+let measureButton = document.querySelector("#measure-icon");
+let draw, polygonFeature;
+draw = new Draw({
+  type: "Polygon",
+});
+draw.addEventListener('drawend', (event)=>{
+  polygonFeature = event.feature;
+  let area = getArea(polygonFeature.getGeometry()) / 1000000;
+  alert("The area of this polygon is " + area + " km²");
+})
+measureButton.addEventListener("click", ()=>{
+  isMeasuring = !isMeasuring;
+  console.log(isMeasuring)
+  if (isMeasuring) {
+    measureButton.style.color = 'green';
+    map.addInteraction(draw);
+  }
+  else {
+    measureButton.style.color = 'black';
+    map.removeInteraction(draw);
+  }
 })
