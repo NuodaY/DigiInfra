@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/x-icon" href="https://openlayers.org/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>达尔文市数字基建系统</title>
+    <script src="https://code.jquery.com/jquery-2.2.3.min.js"></script>
+    <script src="script.js" type="javascript"></script>
+    <script src="https://kit.fontawesome.com/34cf5b44a8.js" crossorigin="anonymous"></script>
+  </head>
+  <body>
+
+    <div id="map"></div>
+
+    <i id="measure-icon" class="fa-solid fa-ruler fa-xl" title="测量面积"></i>
+
+    <input class="searchbox" type="text" placeholder=" 输入SA2以定位">
+    <i id="search-icon" class="fa-solid fa-magnifying-glass fa-xl" title="移动到SA2"></i>
+
+    <select name="layers" id="layers" form="layerslist">
+      <option value="0" selected="select">就医指数</option>
+      <option value="1">流浪人口比例</option>
+      <option value="2">每住户就业比例</option>
+      <option value="3">教师学生比例</option>
+    </select>
+    <script type="module" src="./main.js"></script>
+
+    <input class="slider" type="range" min="0" max="10" value="6" class="slider" id="myRange">
+    
+    <i id="info-icon" class="fa-solid fa-circle-info fa-2xl" title="关于该网页"></i>
+    <i id="github-icon" class="fa-brands fa-square-github fa-2xl" title="作者"></i>
+    <i id="filter-icon" class="fa-solid fa-filter fa-2xl" title="筛选要素"></i>
+    <i id="graph-icon" class="fa-solid fa-chart-simple fa-xl" title="显示图表"></i>
+    <a href="./index.html">
+      <i id="language-icon" class="fa-solid fa-language fa-xl" title="切换语言"></i>
+    </a>
+
+    <div id="popup" class="ol-popup">
+			<a href="#" id="popup-closer" class="ol-popup-closer"></a>
+			<div id="popup-content"></div>
+		</div>
+
+    <div id="info-panel">
+      
+    </div>
+
+    <div id="chart">
+      
+    </div>
+
+  </body>
+</html>

@@ -30,7 +30,13 @@ const layerIndicators = [
   'homeless_ratio',
   'jobs_per_housing_ratio',
   'teacher_student_ratio'
-]
+];
+const layerIndicatorsCN = [
+  '就医指数', 
+  '流浪人口比例',
+  '每住户就业比例',
+  '教师学生比例'
+];
 const geoserver_url = 'https://g10.digitinfra.org/geoserver/G10_ma/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=G10_ma%3A';
 let selectedLayerIndex = 0;
 let isMeasuring = false;
@@ -175,7 +181,13 @@ map.on("click", function(evt){
   for (let i in latLng) {
     latLng[i] = latLng[i].toFixed(3)
   }
-  container.innerText = `Geographic Coordinates: (${latLng})`;
+  if (title != "Greater Darwin Digital Infrastructure") {
+    container.innerText = `地理坐标: (${latLng})`;
+  }
+  else {
+    container.innerText = `Geographic Coordinates: (${latLng})`;
+  }
+
   overlay.setPosition(evt.coordinate);
 
   let features = map.forEachFeatureAtPixel(evt.pixel,
@@ -193,8 +205,16 @@ map.on("click", function(evt){
       Area: allProperties["areasqkm21"] + " km²"
     }
     let indicator = features.get(layerIndicators[selectedLayerIndex]);
-    container.innerText += `\nRegion Information:${JSON.stringify(results, null, 2)}`;
-    container.innerText += `\n${layerIndicators[selectedLayerIndex]}: ${(indicator).toFixed(4)}`
+    if (title != "Greater Darwin Digital Infrastructure") {
+      container.innerText += `\n区域信息:${JSON.stringify(results, null, 2)}`;
+      container.innerText += `\n${layerIndicatorsCN[selectedLayerIndex]}: ${(indicator).toFixed(4)}`
+    }
+    else {
+      container.innerText += `\nRegion Information:${JSON.stringify(results, null, 2)}`;
+      container.innerText += `\n${layerIndicators[selectedLayerIndex]}: ${(indicator).toFixed(4)}`
+    }
+
+
   }
 
 })
@@ -257,9 +277,26 @@ let filterButton = document.querySelector("#filter-icon");
 let graphButton = document.querySelector("#graph-icon");
 let panel = document.querySelector("#info-panel");
 let graph = document.querySelector("#chart");
+let title = document.querySelector("title").innerText;
 infoButton.addEventListener('click', ()=>{
   panel.style.display = "block";
-  panel.innerHTML = "<h3>A Digital Infrastructure for Greater Darwin</h3>"
+  if (title != "Greater Darwin Digital Infrastructure") {
+    panel.innerHTML = "<h3>达尔文市数字基建系统</h3>"
+                  + "<p>该系统允许用户监管达尔文市的四个城市表现指标</p>"
+                  + "<p>这些指标分别是：</p>"
+                  + "<h4>就医指数</h4>"
+                  + "<h4>流浪人口比例</h4>"
+                  + "<h4>每住户就业比例</h4>"
+                  + "<h4>教师学生比例</h4>"
+                  + "<p>每一个指标都显示在一个单独的图层中， 用户可以切换正上方的下拉列表来切换图层👆, 也可以用下拉列表下面的滑动栏改变图层透明度</p>"
+                  + "<p>选中一个二级统计区域(即SA2)将会跳出区域信息</p>"
+                  + "<p>用户也可以输入一个SA2名字来快速定位到改区域</p>"
+                  + "<p>左侧的测量工具可以允许用户画一个区域并测量出它的面积 ，点击来启用工具，再次点击来关闭工具</p>"
+                  + "<p>点击图表按钮来显示当前图层的图表</p>"
+                  + "<i id='close-icon' class='fa-solid fa-xmark fa-xl'></i>"
+  }
+  else {
+    panel.innerHTML = "<h3>A Digital Infrastructure for Greater Darwin</h3>"
                   + "<p>This digital infrastructure allows users to monitor four city performance indicators in Greater Darwin.</p>"
                   + "<p>They are:</p>"
                   + "<h4>Access To Doctors</h4>"
@@ -272,6 +309,8 @@ infoButton.addEventListener('click', ()=>{
                   + "<p>The measure button on the left side allows to draw a polygon and measure its area. Click to activate measuring and click again to deactivate.</p>"
                   + "<p>Click the graph button to show grapg for current layer.</p>"
                   + "<i id='close-icon' class='fa-solid fa-xmark fa-xl'></i>"
+  }
+  
   panel.style.height = "620px";
   document.querySelector("#close-icon").addEventListener('click', ()=>{
     panel.style.display = "none";
@@ -279,12 +318,25 @@ infoButton.addEventListener('click', ()=>{
 })
 authorButton.addEventListener('click', ()=>{
   panel.style.display = "block";
-  panel.innerHTML = "<h3>The web application is completely developed by Nuoda Yang.</h3>"
-                  + "<p>Tools & Tech Stacks: Openlayers + PostGIS + Geoserver + Node.js</p>"
-                  + "<p>Coding Languages: HTML + CSS + Javascript</p>"
-                  + "<a href='https://github.com/NuodaY/DigiInfra'>Github Repository</a><br>"
-                  + "<a href='https://www.linkedin.com/in/nuoda-yang-27883a211/'>Author Linkedin Page</a>"
-                  + "<i id='close-icon' class='fa-solid fa-xmark fa-xl'></i>"
+  if (title != "Greater Darwin Digital Infrastructure") {
+    panel.innerHTML = "<h3>该网页程序的开发完全由杨诺达完成</h3>"
+                + "<p>工具和技术栈: Openlayers + PostGIS + Geoserver + Node.js + ECharts</p>"
+                + "<p>代码使用语言: HTML + CSS + Javascript</p>"
+                + "<p>底图: OpenStreetMap + ArcGIS World Street Map</p>"
+                + "<a href='https://github.com/NuodaY/DigiInfra'>Github仓库地址</a><br>"
+                + "<a href='https://www.linkedin.com/in/nuoda-yang-27883a211/'>作者领英主页</a>"
+                + "<i id='close-icon' class='fa-solid fa-xmark fa-xl'></i>"
+  }
+  else {
+    panel.innerHTML = "<h3>The web application is completely developed by Nuoda Yang.</h3>"
+                + "<p>Tools & Tech Stacks: Openlayers + PostGIS + Geoserver + Node.js + ECharts</p>"
+                + "<p>Coding Languages: HTML + CSS + Javascript</p>"
+                + "<p>Basemap: OpenStreetMap + ArcGIS World Street Map</p>"
+                + "<a href='https://github.com/NuodaY/DigiInfra'>Github Repository</a><br>"
+                + "<a href='https://www.linkedin.com/in/nuoda-yang-27883a211/'>Author Linkedin Page</a>"
+                + "<i id='close-icon' class='fa-solid fa-xmark fa-xl'></i>"
+  }
+
   panel.style.height = "250px";
   document.querySelector("#close-icon").addEventListener('click', ()=>{
     panel.style.display = "none";
@@ -292,7 +344,20 @@ authorButton.addEventListener('click', ()=>{
 })
 filterButton.addEventListener('click', ()=>{
   panel.style.display = "block";
-  panel.innerHTML = "<h3>Filter the features through expressions.</h3>"
+  if (title != "Greater Darwin Digital Infrastructure") {
+    panel.innerHTML = "<h3>跟据表达式筛选要素</h3>"
+                  + "<input type='text' id='columnName' disabled></input>&nbsp&nbsp"
+                  + "<select id='operator'> \
+                      <option value='>'>&gt</option> \
+                      <option value='='>=</option> \
+                      <option value='<'>&lt</option> \
+                      </select>&nbsp&nbsp"
+                  + "<input type='text' id='number' placeholder='输入数字'></input><br><br>"
+                  + "<button id='startFilter'>开始筛选!</button>"
+                  + "<i id='close-icon' class='fa-solid fa-xmark fa-xl'></i>"
+  }
+  else {
+    panel.innerHTML = "<h3>Filter the features through expressions.</h3>"
                   + "<input type='text' id='columnName' disabled></input>&nbsp&nbsp"
                   + "<select id='operator'> \
                       <option value='>'>&gt</option> \
@@ -302,8 +367,10 @@ filterButton.addEventListener('click', ()=>{
                   + "<input type='text' id='number' placeholder='specify a number'></input><br><br>"
                   + "<button id='startFilter'>Start Filter!</button>"
                   + "<i id='close-icon' class='fa-solid fa-xmark fa-xl'></i>"
+  }
+  
   panel.style.height = "150px";
-  document.querySelector("#columnName").value = layerIndicators[selectedLayerIndex];
+  document.querySelector("#columnName").value = layerIndicatorsCN[selectedLayerIndex];
   document.querySelector("#close-icon").addEventListener('click', ()=>{
     panel.style.display = "none";
   })
@@ -314,7 +381,7 @@ filterButton.addEventListener('click', ()=>{
     let expression = "&CQL_FILTER=" + layerIndicators[selectedLayerIndex] 
                     + document.querySelector("#operator").value
                     + document.querySelector("#number").value;
-    console.log(url+expression);
+
     fetch(url+expression).then(response=>response.json()).then(data=>{
       const filteredFeatures = new GeoJSON().readFeatures(data, {
         featureProjection: 'EPSG:3857'
@@ -336,7 +403,13 @@ draw = new Draw({
 draw.addEventListener('drawend', (event)=>{
   polygonFeature = event.feature;
   let area = getArea(polygonFeature.getGeometry()) / 1000000;
-  alert("The area of this polygon is " + area + " km²");
+  if (title != "Greater Darwin Digital Infrastructure") {
+    alert("该区域面积为 " + area + " km²");
+  }
+  else {
+    alert("The area of this polygon is " + area + " km²");
+  }
+
 })
 measureButton.addEventListener("click", ()=>{
   isMeasuring = !isMeasuring;
@@ -372,25 +445,45 @@ const createChart = ()=>{
     xAxis.push(feature.get("sa2_name21"));
     yAxis.push(feature.get(layerIndicators[selectedLayerIndex]));
   }
-  console.log(xAxis);
-  console.log(yAxis);
-  myChart.setOption({
-    title: {
-      text: 'Chart for Current Layer'
-    },
-    tooltip: {},
-    xAxis: {
-      data: xAxis
-    },
-    yAxis: {},
-    series: [
-      {
-        name: 'indicator - ' + layerIndicators[selectedLayerIndex],
-        type: 'bar',
-        data: yAxis
-      }
-    ]
-  });
+  if (title != "Greater Darwin Digital Infrastructure") {
+    myChart.setOption({
+      title: {
+        text: '当前图层图表'
+      },
+      tooltip: {},
+      xAxis: {
+        data: xAxis
+      },
+      yAxis: {},
+      series: [
+        {
+          name: '指标 - ' + layerIndicatorsCN[selectedLayerIndex],
+          type: 'bar',
+          data: yAxis
+        }
+      ]
+    });
+  }
+  else {
+    myChart.setOption({
+      title: {
+        text: 'Chart for Current Layer'
+      },
+      tooltip: {},
+      xAxis: {
+        data: xAxis
+      },
+      yAxis: {},
+      series: [
+        {
+          name: 'indicator - ' + layerIndicators[selectedLayerIndex],
+          type: 'bar',
+          data: yAxis
+        }
+      ]
+    });
+  }
+
 }
 
 

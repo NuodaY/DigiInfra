@@ -73,6 +73,12 @@ html, body {
   left: 10px;
 }
 
+#language-icon {
+  position: absolute;
+  top: 21px;
+  left: 300px;
+}
+
 .switch {
   position: absolute;
   z-index: 9999;
