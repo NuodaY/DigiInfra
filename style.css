@@ -67,6 +67,12 @@ html, body {
   left: 10px;
 }
 
+#graph-icon {
+  position: absolute;
+  top: 130px;
+  left: 10px;
+}
+
 .switch {
   position: absolute;
   z-index: 9999;
@@ -111,6 +117,17 @@ html, body {
   position: absolute;
   left: 50%;
   transform: translateX(-50%);
+}
+
+#chart {
+  position: absolute;
+  background-color: whitesmoke;
+  top: 50%;
+  left: 5px;
+  width: 400px;
+  height: 300px;
+  transform: translateY(-50%);
+  display: none;
 }
 
 i {

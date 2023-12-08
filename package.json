@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "colormap": "^2.3.2",
+    "echarts": "^5.4.3",
     "ol": "latest"
   }
 }

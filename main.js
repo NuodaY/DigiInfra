@@ -16,7 +16,8 @@ import Select from 'ol/interaction/Select.js'
 import { pointerMove } from 'ol/events/condition';
 import { getCenter } from 'ol/extent';
 import {OverviewMap, defaults as defaultControls} from 'ol/control.js';
-import {getLength, getArea} from 'ol/sphere.js';
+import { getArea } from 'ol/sphere.js';
+import * as echarts from 'echarts';
 
 const layers = [
   'greater_darwin_access_to_doctors', 
@@ -33,6 +34,8 @@ const layerIndicators = [
 const geoserver_url = 'https://g10.digitinfra.org/geoserver/G10_ma/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=G10_ma%3A';
 let selectedLayerIndex = 0;
 let isMeasuring = false;
+let showGraph = false;
+let myChart = echarts.init(document.getElementById('chart'));
 
 const overviewMapControl = new OverviewMap({
   layers: [
@@ -153,6 +156,9 @@ layerSelector.addEventListener('change', function(){
     console.log(layer.get("title"), layers[selectedLayerIndex])
     layer.setVisible(layer.get("title") == layers[selectedLayerIndex])
   })
+  showGraph = false;
+  graphButton.style.color = "black";
+  graph.style.display = "none";
 })
 
 const container = document.getElementById('popup');
@@ -248,7 +254,9 @@ searchButton.addEventListener("click", ()=>{
 let infoButton = document.querySelector("#info-icon");
 let authorButton = document.querySelector("#github-icon");
 let filterButton = document.querySelector("#filter-icon");
+let graphButton = document.querySelector("#graph-icon");
 let panel = document.querySelector("#info-panel");
+let graph = document.querySelector("#chart");
 infoButton.addEventListener('click', ()=>{
   panel.style.display = "block";
   panel.innerHTML = "<h3>A Digital Infrastructure for Greater Darwin</h3>"
@@ -262,8 +270,9 @@ infoButton.addEventListener('click', ()=>{
                   + "<p>Click on a Statistical Area Lv2 (SA2) region and its information will pop up.</p>"
                   + "<p>Users can also type in a SA2 name to locate to the SA2.</p>"
                   + "<p>The measure button on the left side allows to draw a polygon and measure its area. Click to activate measuring and click again to deactivate.</p>"
+                  + "<p>Click the graph button to show grapg for current layer.</p>"
                   + "<i id='close-icon' class='fa-solid fa-xmark fa-xl'></i>"
-  panel.style.height = "600px";
+  panel.style.height = "620px";
   document.querySelector("#close-icon").addEventListener('click', ()=>{
     panel.style.display = "none";
   })
@@ -341,3 +350,47 @@ measureButton.addEventListener("click", ()=>{
     map.removeInteraction(draw);
   }
 })
+
+graphButton.addEventListener('click', ()=>{
+  showGraph = !showGraph;
+  if (showGraph) {
+    graphButton.style.color = "green";
+    graph.style.display = "block";
+    createChart();
+  }
+  else {
+    graphButton.style.color = "black";
+    graph.style.display = "none";
+  }
+})
+
+const createChart = ()=>{
+  let xAxis = [];
+  let yAxis = [];
+  let currentLayer = layergroup.getLayers().getArray()[selectedLayerIndex];
+  for (let feature of currentLayer.getSource().getFeatures()) {
+    xAxis.push(feature.get("sa2_name21"));
+    yAxis.push(feature.get(layerIndicators[selectedLayerIndex]));
+  }
+  console.log(xAxis);
+  console.log(yAxis);
+  myChart.setOption({
+    title: {
+      text: 'Chart for Current Layer'
+    },
+    tooltip: {},
+    xAxis: {
+      data: xAxis
+    },
+    yAxis: {},
+    series: [
+      {
+        name: 'indicator - ' + layerIndicators[selectedLayerIndex],
+        type: 'bar',
+        data: yAxis
+      }
+    ]
+  });
+}
+
+
