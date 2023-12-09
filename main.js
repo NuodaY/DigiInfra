@@ -355,6 +355,7 @@ filterButton.addEventListener('click', ()=>{
                   + "<input type='text' id='number' placeholder='输入数字'></input><br><br>"
                   + "<button id='startFilter'>开始筛选!</button>"
                   + "<i id='close-icon' class='fa-solid fa-xmark fa-xl'></i>"
+    document.querySelector("#columnName").value = layerIndicatorsCN[selectedLayerIndex];
   }
   else {
     panel.innerHTML = "<h3>Filter the features through expressions.</h3>"
@@ -367,10 +368,11 @@ filterButton.addEventListener('click', ()=>{
                   + "<input type='text' id='number' placeholder='specify a number'></input><br><br>"
                   + "<button id='startFilter'>Start Filter!</button>"
                   + "<i id='close-icon' class='fa-solid fa-xmark fa-xl'></i>"
+    document.querySelector("#columnName").value = layerIndicators[selectedLayerIndex];
   }
   
   panel.style.height = "150px";
-  document.querySelector("#columnName").value = layerIndicatorsCN[selectedLayerIndex];
+
   document.querySelector("#close-icon").addEventListener('click', ()=>{
     panel.style.display = "none";
   })
